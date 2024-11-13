@@ -15,6 +15,14 @@
     <style>
         .container {
             width: 640px;
+
+        }
+
+        .d-flex {
+            display: flex;
+            /* Plan 2와 Plan 3을 가로로 배치 */
+            gap: 10px;
+            /* 요소 간의 간격 */
         }
     </style>
 </head>
@@ -22,7 +30,7 @@
 <body>
 
     <!-- 상단 제목 -->
-    <nav class="navbar bg-body-tertiary"> 
+    <nav class="navbar bg-body-tertiary">
         <div class="container">
             <span class="navbar-brand mb-0 h1">
                 <i class="bi bi-card-checklist"></i>
@@ -40,12 +48,14 @@
                 Add
             </button>
         </div>
-        <!-- 리스트 --> 
+        <!-- 리스트 -->
         <div class="d-flex">
+            <!-- Plans 리스트 -->
             <div class="flex-grow-1 bg-light rounded-2 p-2 me-1 w-50">
                 <h3>Plans</h3>
                 <div id="plan-list">
-                    <div class="plan bg-light p-1 rounded-2 ps-2 d-flex align-items-center">
+                    <!-- Sample Plan -->
+                    <!-- <div class="plan bg-light p-1 rounded-2 ps-2 d-flex align-items-center">
                         <span class="me-auto">Sample Plan</span>
                         <button class="btn btn-sm btn-success me-1">
                             <i class="bi bi-check"></i>
@@ -53,46 +63,116 @@
                         <button class="btn btn-sm btn-danger">
                             <i class="bi bi-x"></i>
                         </button>
-                    </div>
-                </div>
-                <div class="flex-grow-1 bg-light rounded-2 p-2 w-50">
-                    <h3>Done</h3>
-                    <div id="done-list">
-
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
+            <!-- Done 리스트 -->
+            <div class="flex-grow-1 bg-light rounded-2 p-2 w-50">
+                <h3>Done</h3>
+                <div id="done-list">
+                    <!-- 완료된 계획 목록이 여기에 표시됩니다 -->
+                </div>
+            </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script>
-            const Type = {
-                Todo: 1,
-                Done: 2
-            }; // 객체 생성해줌
-            let addBtn = document.querySelector("#add-btn");
+    </div>
 
-            addBtn.addEventListener("click", () => {
-                // 1. Read the text in #plan-input.
-                let input = document.querySelector("#plan-input");
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-                let text = input.value;
-                if (!plan.length) return;
+    <script>
+        const Type = {
+            Todo: 1,
+            Done: 2
+        }; // Type 객체 생성
 
-                // 2. Create a new Plan object.
-                let plan = {
-                    text: text,
-                    type: Type.Todo
-                };
-                // 3. Append the new Plan object to plans
-                // 4. Create a new plan item and attach it to #plan-list.
-                addToList(plan);
-                // 5. Clear #plan-input.
-                input.value = "";
+        let plans = [];
+
+        // 페이지가 로드될 때 계획을 불러오는 이벤트 설정
+        window.addEventListener("load", () => {
+            loadPlans();
+        });
+
+        function addToList(plan) {
+            // 새로운 div 요소 생성, "plan"이라는 클래스명과 부트스트랩 스타일을 추가하여 UI 디자인 설정
+            let div = document.createElement("div");
+            div.className = "plan bg-light p-1 rounded-2 ps-2 d-flex align-items-center";
+
+            // 새로운 span 요소 생성, 텍스트를 표시하고 버튼과의 간격을 설정하기 위해 클래스 추가
+            let span = document.createElement("span");
+            span.classList.add("me-auto");
+            span.textContent = plan.text; // span에 표시할 내용을 'plan.text'로 설정
+            div.appendChild(span); // span을 div에 추가하여 계획의 텍스트를 화면에 표시
+
+            // "Todo" 타입의 plan일 경우 완료 버튼 생성
+            if (plan.type === Type.Todo) {
+                let buttonDone = document.createElement("button");
+                buttonDone.classList.add("btn", "btn-sm", "btn-success", "me-1"); // 부트스트랩 스타일 추가
+                buttonDone.innerHTML = '<i class="bi bi-check"></i>'; // 완료 아이콘 설정
+                div.appendChild(buttonDone); // 완료 버튼을 div에 추가하여 HTML에 표시
+
+                // 완료 버튼의 이벤트 리스너 설정 (추후 필요 시 기능 구현)
+            }
+
+            // 삭제 버튼 생성
+            let buttonRemove = document.createElement("button");
+            buttonRemove.classList.add("btn", "btn-sm", "btn-danger"); // 삭제 버튼 스타일 추가
+            let iElem = document.createElement("i"); // 삭제 버튼 안에 x 아이콘 추가
+            iElem.classList.add("bi", "bi-x");
+            buttonRemove.appendChild(iElem); // 아이콘을 삭제 버튼에 추가
+            div.appendChild(buttonRemove); // 삭제 버튼을 div에 추가하여 화면에 표시
+
+            // 삭제 버튼에 클릭 이벤트 리스너 추가하여 div 삭제 기능 구현
+            buttonRemove.addEventListener("click", () => {
+                div.remove(); // 삭제 버튼 클릭 시 해당 계획을 화면에서 제거
+                plans = plans.filter(p => p !== plan);
+                savePlans();
             });
-        </script>
+
+            // plan.type에 따라 #plan-list(할 일 목록) 또는 #done-list(완료 목록)에 div 추가
+            let list = document.querySelector(plan.type === Type.Todo ? "#plan-list" : "#done-list");
+            list.appendChild(div); // HTML의 해당 목록에 div 요소를 추가하여 화면에 표시
+        }
+
+        function loadPlans() {
+            let lastPlans = localStorage.getItem("plans");
+            if (!lastPlans) return;
+
+            plans = JSON.parse(lastPlans); // JSON 데이터를 배열로 파싱하여 plans에 저장
+            plans.forEach(p => {
+                addToList(p);
+            });
+        }
+
+        function savePlans() {
+            localStorage.setItem("plans", JSON.stringify(plans));
+        }
+
+        let addBtn = document.querySelector("#add-btn");
+
+        addBtn.addEventListener("click", () => {
+            // 1. Read the text in #plan-input.
+            let input = document.querySelector("#plan-input");
+
+            let text = input.value;
+            if (!text.length) return; // text의 길이를 확인하여 빈 입력 방지
+
+            // 2. Create a new Plan object.
+            let plan = {
+                text: text,
+                type: Type.Todo
+            };
+            // 3. Append the new Plan object to plans
+            plans.push(plan);
+            savePlans();
+            // 4. Create a new plan item and attach it to #plan-list.
+            addToList(plan);
+            // 5. Clear #plan-input.
+            input.value = "";
+        });
+    </script>
+
 </body>
 
 </html>
